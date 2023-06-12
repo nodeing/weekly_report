@@ -38,23 +38,32 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
 
   let counter = 0;
 
-  const useUserKey = process.env.NEXT_PUBLIC_USE_USER_KEY === "true" ? true : false;
+  const useUserKey =
+    process.env.NEXT_PUBLIC_USE_USER_KEY === "true" ? true : false;
 
-  var openai_api_key = (useUserKey ? payload.api_key : process.env.OPENAI_API_KEY) || ""
-  if(!useUserKey){
-    openai_api_key = newapikey
+  var openai_api_key =
+    (useUserKey ? payload.api_key : process.env.OPENAI_API_KEY) || "";
+  if (!useUserKey) {
+    openai_api_key = newapikey;
   }
 
-  function checkString(str :string) {
+  function checkString(str: string) {
     var pattern = /^sk-[A-Za-z0-9]{48}$/;
     return pattern.test(str);
   }
-  if(!checkString(openai_api_key)) {
-    throw new Error('OpenAI API Key Format Error')
-  }
-  delete payload.api_key
+  // if(!checkString(openai_api_key)) {
+  //   throw new Error('OpenAI API Key Format Error')
+  // }
+  delete payload.api_key;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  let base_url = process.env.OPENAI_API_BASE_URL
+    ? process.env.OPENAI_API_BASE_URL
+    : "https://oa.api2d.net";
+  if (checkString(openai_api_key)) {
+    base_url = "https://api.openai.com";
+  }
+
+  const res = await fetch(`${base_url}/v1/chat/completions`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${openai_api_key ?? ""}`,
